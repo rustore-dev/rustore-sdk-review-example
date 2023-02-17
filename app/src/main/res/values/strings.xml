@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Review Example</string>
+
+    <string name="user_flow_counter_title">Счетчик</string>
+    <string name="user_flow_counter_subtitle">Наберите %1$d, чтобы победить</string>
+    <string name="user_flow_end">Вы победили!</string>
+
+    <string name="user_flow_restart_title">Флоу пользователя закончен</string>
+    <string name="user_flow_restart_message">Можете перезапустить флоу.</string>
+    <string name="user_flow_restart_positive_button">Перезапуск</string>
+</resources>

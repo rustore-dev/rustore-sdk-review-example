@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/userFlowExampleFragment">
+
+    <fragment
+        android:id="@+id/userFlowExampleFragment"
+        android:name="ru.rustore.sdk.reviewexample.userflow.UserFlowExampleFragment"
+        android:label="UserFlowExampleFragment"
+        tools:layout="@layout/fragment_user_flow_example">
+
+        <action
+            android:id="@+id/actionRestartUserFlowExampleFragment"
+            app:destination="@id/userFlowExampleFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim"
+            app:popEnterAnim="@anim/nav_default_pop_enter_anim"
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"
+            app:popUpTo="@id/userFlowExampleFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+</navigation>
