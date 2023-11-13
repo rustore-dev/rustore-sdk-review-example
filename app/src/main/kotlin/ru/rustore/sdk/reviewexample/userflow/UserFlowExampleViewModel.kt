@@ -4,11 +4,11 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
+import ru.rustore.sdk.review.RuStoreReviewManager
+import ru.rustore.sdk.review.RuStoreReviewManagerFactory
+import ru.rustore.sdk.review.model.ReviewInfo
 import ru.rustore.sdk.reviewexample.userflow.model.UserFlowEvent
 import ru.rustore.sdk.reviewexample.userflow.model.UserFlowState
-import ru.vk.store.sdk.review.RuStoreReviewManager
-import ru.vk.store.sdk.review.RuStoreReviewManagerFactory
-import ru.vk.store.sdk.review.model.ReviewInfo
 
 class UserFlowExampleViewModel : ViewModel() {
 
