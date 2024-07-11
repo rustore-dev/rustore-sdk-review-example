@@ -1,115 +1,124 @@
 # Пример внедрения SDK отзывов и оценок RuStore
 ## [Документация SDK отзывов и оценок](https://help.rustore.ru/rustore/for_developers/developer-documentation/SDK-reviews-ratings)
 
-### Требуемые условия
 
-Для корректной работы SDK необходимо соблюдать следующие условия:
+### Оглавление
+- [Условия работы SDK оценок и отзывов](#Условия-работы-SDK-оценок-и-отзывов)
+- [Подготовка требуемых параметров](#Подготовка-требуемых-параметров)
+- [Настройка примера приложения](#Настройка-примера-приложения)
+- [Сценарий использования](#Сценарий-использования)
+- [Условия распространения](#Условия-распространения)
+- [Техническая поддержка](#Техническая-поддержка)
+
+
+### Условия работы SDK оценок и отзывов
+
+Для работы SDK оценок и отзывов необходимо соблюдение следующих условий:
 
 Требования для пользователя:
-- На устройстве пользователя установлено приложение RuStore.
 
-- Версия RuStoreApp на устройстве пользователя актуальная.
+- ОС Android версии 7.0 или выше.
 
-- Пользователь  авторизован в приложении RuStore.
+- На устройстве пользователя установлена актуальная версия RuStore.
+
+- Пользователь авторизован в RuStore.
+
+- Приложение должно быть опубликовано в RuStore.
 
 Требования для разработчика/приложения:
 
-- Android 6 (SDK 23)
-
-- ApplicationId, указанный в build.gradle, совпадает с applicationId apk-файла, который вы публиковали в консоль RuStore:
-```
-android {
-    defaultConfig {
-        applicationId = "ru.rustore.sdk.reviewexample" // Зачастую в buildTypes приписывается .debug
-    }
-}
-```
+- ApplicationId, указанный в build.gradle, совпадает с applicationId apk-файла, который вы публиковали в консоль RuStore.
 
 - Подпись keystore должна совпадать с подписью, которой было подписано приложение, опубликованное в консоль RuStore. Убедитесь, что используемый buildType (пр. debug) использует такую же подпись, что и опубликованное приложение (пр. release).
 
-### Описание приложения
+### Подготовка требуемых параметров
+
+1. `applicationId` - из приложения, которое вы публиковали в консоль RuStore, находится в файле build.gradle вашего проекта
+    ```
+    android {
+        defaultConfig {
+            applicationId = "ru.rustore.sdk.reviewexample"
+        }
+    }
+    ```
+
+2. `release.keystore` - подпись, которой было подписано приложение, опубликованное в консоль RuStore.
+
+3. `release.properties` - в этом файле должны быть указаны параметры подписи, которой было подписано приложение, опубликованное в консоль RuStore. [Как работать с ключами подписи APK-файлов](https://www.rustore.ru/help/developers/publishing-and-verifying-apps/app-publication/apk-signature/)
+
+
+### Настройка примера приложения
+
+1. Замените `applicationId`, в файле build.gradle, на applicationId apk-файла, который вы публиковали в консоль RuStore:
+   ```
+   android {
+       defaultConfig {
+          applicationId = "ru.rustore.sdk.reviewexample"
+       }
+   }
+   ```
+   
+2. В директории `cert` замените сертификат `release.keystore` - сертификатом своего приложения, так же в `release.properties` выполните настройку параметров `key_alias`, `key_password`, `store_password`. Подпись `release.keystore` должна совпадать с подписью, которой было подписано приложение, опубликованное в консоль RuStore. Убедитесь, что используемый `buildType` (пр. debug) использует такую же подпись, что и опубликованное приложение (пр. release).
+
+3. Запустите проект и проверьте работу приложения
+
+
+### Сценарий-использования
 
 Представим, что у нас есть игра, где нужно нажать 5 раз кнопку, чтобы победить.
 Это означает, что начало флоу пользователя - старт игры (открытие экрана), а конец флоу - победа в игре.
 
 ![Начало флоу](https://i.imgur.com/mUmqqHl.jpg) ![Оценка приложения](https://i.imgur.com/qBteJTG.jpg) ![Конец флоу](https://i.imgur.com/FnDmNYP.jpg)
 
-### Использование методов
 
-Рекомендуется использовать requestReviewFlow() в начале флоу пользователя (где-то за 0-3 минуты до показа шторки), чтобы запуск шторки оценки произошел мгновенно:
+#### Подготовка к работе с оценками
+
+Для работы с оценками необходимо создать RuStoreReviewManager с помощью `RuStoreReviewManagerFactory`.
 ```
-class UserFlowExampleFragment : Fragment() {
-
-    private val viewModel: UserFlowExampleViewModel by viewModels()
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        viewModel.init(requireContext())
-        // ...
-    }
+val reviewManager = RuStoreReviewManagerFactory.create(context)
 ```
 
+#### Подготовка к запуску оценки приложения
+
+Рекомендуется использовать [requestReviewFlow](https://www.rustore.ru/help/sdk/reviews-ratings/kotlin-java/6-0-0#подготовка-к-запуску-оценки-приложения) заранее, перед вызовом launchReviewFlow, чтобы подготовить необходимую информацию для отображения экрана. Срок жизни ReviewInfo — около пяти минут.
+
 ```
-class UserFlowExampleViewModel : ViewModel() {
-    private lateinit var reviewManager: RuStoreReviewManager
-    private var reviewInfo: ReviewInfo? = null
-    
-    private var isInitCalled: Boolean = false
-    
-    fun init(context: Context) {
-        if (isInitCalled) return
+private fun requestReviewFlow() {
+    if (reviewInfo != null) return
 
-        createReviewManager(context)
-        requestReviewFlow()
-
-        isInitCalled = true
+    reviewManager.requestReviewFlow().addOnSuccessListener { reviewInfo ->
+            this.reviewInfo = reviewInfo
     }
 }
 ```
-Открывать launchReviewFlow() необходимо в конце флоу пользователя (победа в игре):
+
+#### Запуск оценки приложения
+
+Для запуска формы запроса оценки и отзыва о приложении у пользователя вызовите метод [launchReviewFlow](https://www.rustore.ru/help/sdk/reviews-ratings/kotlin-java/6-0-0#запуск-оценки-приложения), используя ранее полученный ReviewInfo.
+
 ```
-class UserFlowExampleViewModel) : ViewModel() {
-    private lateinit var reviewManager: RuStoreReviewManager
-    private var reviewInfo: ReviewInfo? = null
-
-    fun onCounterClick() {
-        // ...
-        if (hasWon) {
-            launchReviewFlow()
-        }
-        // ...
-    }
-
     private fun launchReviewFlow() {
         val reviewInfo = reviewInfo
         if (reviewInfo != null) {
-            reviewManager.launchReviewFlow(reviewInfo).addOnSuccessListener {
+            reviewManager.launchReviewFlow(reviewInfo)
+            .addOnSuccessListener {
                 _event.tryEmit(UserFlowEvent.ReviewEnd)
-            }.addOnFailureListener {
+            }
+            .addOnFailureListener {
                 _event.tryEmit(UserFlowEvent.ReviewEnd)
             }
         } else {
             _event.tryEmit(UserFlowEvent.ReviewEnd)
         }
     }
-}
-
-class UserFlowExampleFragment : Fragment() {
-    // ...
-    private fun handleEvent(event: UserFlowEvent) {
-        when (event) {
-            UserFlowEvent.ReviewEnd -> {
-                // Продолжаем флоу приложения
-            }
-        }
-    }
-}
 ```
-при этом продолжать флоу приложения не в зависимости от поставленной оценки (в любом случае показываем диалог).
 
 > Полный код приведенных выше примеров кода приведен в данном репозитории (UserFlowExampleFragment, UserFlowExampleViewModel).
 
-### Есть вопросы
-Если появились вопросы по интеграции SDK оценок и отзывов, обратитесь по этой ссылке:
-https://help.rustore.ru/rustore/trouble/user/help_user_email
-или напишите на почту support@rustore.ru.
+
+### Условия распространения
+Данное программное обеспечение, включая исходные коды, бинарные библиотеки и другие файлы распространяется под лицензией MIT. Информация о лицензировании доступна в документе `MIT-LICENSE.txt`
+
+
+### Техническая поддержка
+Если появились вопросы по интеграции SDK оценок и отзывов, обратитесь по [ссылке](https://www.rustore.ru/help/sdk/reviews-ratings).

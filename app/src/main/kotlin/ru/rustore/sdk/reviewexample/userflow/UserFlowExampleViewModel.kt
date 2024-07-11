@@ -1,6 +1,7 @@
 package ru.rustore.sdk.reviewexample.userflow
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.*
@@ -68,10 +69,13 @@ class UserFlowExampleViewModel : ViewModel() {
     // флоу пользователя не должно быть прервано ошибкой оценки.
     private fun requestReviewFlow() {
         if (reviewInfo != null) return
-
-        reviewManager.requestReviewFlow().addOnSuccessListener { reviewInfo ->
-            this.reviewInfo = reviewInfo
-        }
+        reviewManager.requestReviewFlow()
+            .addOnSuccessListener { reviewInfo ->
+                this.reviewInfo = reviewInfo
+            }
+            .addOnFailureListener { throwable ->
+                Log.e("ReviewExample", throwable.toString())
+            }
     }
 
     // При конце флоу пользователя, предлагаем оценить приложение,
@@ -83,11 +87,13 @@ class UserFlowExampleViewModel : ViewModel() {
     private fun launchReviewFlow() {
         val reviewInfo = reviewInfo
         if (reviewInfo != null) {
-            reviewManager.launchReviewFlow(reviewInfo).addOnSuccessListener {
-                _event.tryEmit(UserFlowEvent.ReviewEnd)
-            }.addOnFailureListener {
-                _event.tryEmit(UserFlowEvent.ReviewEnd)
-            }
+            reviewManager.launchReviewFlow(reviewInfo)
+                .addOnSuccessListener {
+                    _event.tryEmit(UserFlowEvent.ReviewEnd)
+                }.addOnFailureListener { throwable ->
+                    _event.tryEmit(UserFlowEvent.ReviewEnd)
+                    Log.e("ReviewExample", throwable.toString())
+                }
         } else {
             _event.tryEmit(UserFlowEvent.ReviewEnd)
         }
