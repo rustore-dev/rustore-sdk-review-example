@@ -53,7 +53,8 @@ android {
 }
 
 dependencies {
-    implementation("ru.rustore.sdk:review:6.0.0")
+    implementation(platform("ru.rustore.sdk:bom:2025.02.01"))
+    implementation("ru.rustore.sdk:review")
 
     implementation("com.google.android.material:material:1.7.0")
     implementation("androidx.core:core-ktx:1.9.0")
